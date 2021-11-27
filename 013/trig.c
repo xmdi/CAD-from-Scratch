@@ -24,7 +24,7 @@ void normalizeVector(float vec[3]){
 }
 
 float dot(float x[3], float y[3]){
-	return x[0]*y[0]+x[1]*y[1]*x[2]*y[2];
+	return x[0]*y[0]+x[1]*y[1]+x[2]*y[2];
 }
 
 void cross(float x[3], float y[3], float out[3]){
