@@ -17,3 +17,5 @@ code for video series on writing CAD utilities from scratch
 ### 013-Improved CAD Controls & Render Speed
 ### 014-Cursor Ray Tracing
 ### 015-3D Triangle Intersection Masterclass
+### 016-Planar Delaunay Triangulations
+### 017-Constrained Delaunay Triangulations
