@@ -758,46 +758,30 @@ int classifyTriangleIntersect(struct FACE* face1, struct FACE* face2){
 	// on that side of the other triangle's plane
 	if (((Y5<0)&&(Y4>0)&&(Y6>0))||((Y5>0)&&(Y4<0)&&(Y6<0))){
 		rotateFaceNodes(face1,2);
-		float Y=magicDeterminant3(face2->node_array[0],face2->node_array[1],
-								face2->node_array[2],face1->node_array[0]);
-		if (Y<0){ // assure new node0 on face1 in positive subspace of face2
-			swapFaceNodes(face2,1,2);
-		}
+		y4 = y5;
 	}
 	else if (((Y6<0)&&(Y4>0)&&(Y5>0))||((Y6>0)&&(Y4<0)&&(Y5<0))){
 		rotateFaceNodes(face1,1);
-		float Y=magicDeterminant3(face2->node_array[0],face2->node_array[1],
-								face2->node_array[2],face1->node_array[0]);
-		if (Y<0){ // assure new node0 on face1 in positive subspace of face2
-			swapFaceNodes(face2,1,2);
-		}
+		y4 = y6;
 	}
-	else {
-        	if (y4<0){
-            	swapFaceNodes(face2,1,2);
-        	}
-        }
 	if (((Y2<0)&&(Y1>0)&&(Y3>0))||((Y2>0)&&(Y1<0)&&(Y3<0))){
 		rotateFaceNodes(face2,2);
-		float Y=magicDeterminant3(face1->node_array[0],face1->node_array[1],
-								face1->node_array[2],face2->node_array[0]);
-		if (Y<0){ // assure new node0 on face2 in positive subspace of face1
-			swapFaceNodes(face1,1,2);
-		}
+		y1 = y2;
 	}
 	else if (((Y3<0)&&(Y1>0)&&(Y2>0))||((Y3>0)&&(Y1<0)&&(Y2<0))){
 		rotateFaceNodes(face2,1);
-		float Y=magicDeterminant3(face1->node_array[0],face1->node_array[1],
-								face1->node_array[2],face2->node_array[0]);
-		if (Y<0){ // assure new node0 on face2 in positive subspace of face1
-			swapFaceNodes(face1,1,2);
-		}
+		y1 = y3;
 	}
-	else {
-        	if (y1<0){
-            		swapFaceNodes(face1,1,2);
-        	}
-        }
+	
+	// assure new node0 on face2 in positive subspace of face1
+	if (Y4<0){
+		swapFaceNodes(face2 ,1,2);
+	}
+	
+	// assure new node0 on face2 in positive subspace of face1
+	if (Y1<0){
+		swapFaceNodes(face1,1,2);
+	}
 
 	float Y7=magicDeterminant3(face1->node_array[0],face1->node_array[1],
 								face2->node_array[0],face2->node_array[1]);	
