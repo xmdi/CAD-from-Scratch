@@ -772,6 +772,11 @@ int classifyTriangleIntersect(struct FACE* face1, struct FACE* face2){
 			swapFaceNodes(face2,1,2);
 		}
 	}
+	else {
+        	if (y4<0){
+            	swapFaceNodes(face2,1,2);
+        	}
+        }
 	if (((Y2<0)&&(Y1>0)&&(Y3>0))||((Y2>0)&&(Y1<0)&&(Y3<0))){
 		rotateFaceNodes(face2,2);
 		float Y=magicDeterminant3(face1->node_array[0],face1->node_array[1],
@@ -788,6 +793,11 @@ int classifyTriangleIntersect(struct FACE* face1, struct FACE* face2){
 			swapFaceNodes(face1,1,2);
 		}
 	}
+	else {
+        	if (y1<0){
+            		swapFaceNodes(face1,1,2);
+        	}
+        }
 
 	float Y7=magicDeterminant3(face1->node_array[0],face1->node_array[1],
 								face2->node_array[0],face2->node_array[1]);	
