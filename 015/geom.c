@@ -849,12 +849,12 @@ void triangleIntersectionPoints(struct FACE* face1, struct FACE* face2){
 		float point1[3], point2[3];
 
 		if (mode==1){ //k-i-l-j intersection, aka intersection from i to l on both triangles
-			edgeLineIntersection(face1->node_array[0],face1->node_array[1],N3,P3,point1); // i 
+			edgeLineIntersection(face1->node_array[0],face1->node_array[2],N3,P3,point1); // i 
 			edgeLineIntersection(face2->node_array[0],face2->node_array[2],N3,P3,point2); // l
 		}
 		else if (mode==2){ //k-i-j-l intersection, aka intersection from i to j on both triangles
-			edgeLineIntersection(face1->node_array[0],face1->node_array[1],N3,P3,point1); // i 
-			edgeLineIntersection(face1->node_array[0],face1->node_array[2],N3,P3,point2); // j 
+			edgeLineIntersection(face1->node_array[0],face1->node_array[2],N3,P3,point1); // i 
+			edgeLineIntersection(face1->node_array[0],face1->node_array[1],N3,P3,point2); // j 
 		}
 		else if (mode==3){ //i-k-l-j intersection, aka intersection from k to l on both triangles
 			edgeLineIntersection(face2->node_array[0],face2->node_array[1],N3,P3,point1); // k 
@@ -862,7 +862,7 @@ void triangleIntersectionPoints(struct FACE* face1, struct FACE* face2){
 		}
 		else if (mode==4){ //i-k-j-l intersection, aka intersection from k to j on both triangles
 			edgeLineIntersection(face2->node_array[0],face2->node_array[1],N3,P3,point1); // k 
-			edgeLineIntersection(face1->node_array[0],face1->node_array[2],N3,P3,point2); // j 
+			edgeLineIntersection(face1->node_array[0],face1->node_array[1],N3,P3,point2); // j 
 		}
 		printf("Triangle intersection occurs between (%f,%f,%f) & (%f,%f,%f)\n",point1[0],point1[1],point1[2],point2[0],point2[1],point2[2]);	
 	}
