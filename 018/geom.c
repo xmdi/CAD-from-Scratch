@@ -789,8 +789,16 @@ int classifyTriangleIntersect(struct FACE* face1, struct FACE* face2){
 		return 0; // no bounding box overlap, no intersection
 	}
 
+	printf("%d = do bounding boxes intersect?\n",!((face1->xmin>face2->xmax)||
+		(face1->ymin>face2->ymax)||
+		(face1->zmin>face2->zmax)||
+		(face2->xmin>face1->xmax)||
+		(face2->ymin>face1->ymax)||
+		(face2->zmin>face1->zmax)));
+
+
 //	printf("inside classify: faceA node addresses: %p %p %p\n",&face1->node_array[0],&face1->node_array[1],&face1->node_array[2]);
-//	printf("inside classift: faceB node addresses: %p %p %p\n",&face2->node_array[0],&face2->node_array[1],&face2->node_array[2]);
+//	printf("inside classify: faceB node addresses: %p %p %p\n",&face2->node_array[0],&face2->node_array[1],&face2->node_array[2]);
 	
 	// check signed distance between face1 plane and face2 nodes
 	float Y1=magicDeterminant3(face1->node_array[0],face1->node_array[1],
@@ -834,6 +842,8 @@ int classifyTriangleIntersect(struct FACE* face1, struct FACE* face2){
 	float Y6=magicDeterminant3(face2->node_array[0],face2->node_array[1],
 								face2->node_array[2],face1->node_array[2]);	
 
+	
+
 	if (((Y4>0)&&(Y5>0)&&(Y6>0))||((Y4<0)&&(Y5<0)&&(Y6<0))){
 		return 0; // no intersection is possible
 	}
@@ -862,6 +872,17 @@ int classifyTriangleIntersect(struct FACE* face1, struct FACE* face2){
 			swapFaceNodes(face2,1,2);
 		}
 	}
+
+// probably dont have to reevaluate these (they change due to the swap above), but idk anything better rn
+
+/*Y1=magicDeterminant3(face1->node_array[0],face1->node_array[1],
+								face1->node_array[2],face2->node_array[0]);	
+	Y2=magicDeterminant3(face1->node_array[0],face1->node_array[1],
+								face1->node_array[2],face2->node_array[1]);	
+	Y3=magicDeterminant3(face1->node_array[0],face1->node_array[1],
+								face1->node_array[2],face2->node_array[2]);	
+*/
+
 	if (((Y2<0)&&(Y1>0)&&(Y3>0))||((Y2>0)&&(Y1<0)&&(Y3<0))){
 		rotateFaceNodes(face2,2);
 		float Y=magicDeterminant3(face1->node_array[0],face1->node_array[1],
@@ -888,18 +909,21 @@ int classifyTriangleIntersect(struct FACE* face1, struct FACE* face2){
 	float Y10=magicDeterminant3(face1->node_array[0],face1->node_array[1],
 								face2->node_array[2],face2->node_array[0]);	
 
+
 	// check if screw along a1-b1 turns in direction b2-a2
 	// and if screw along a1-c1 turns in direction a2-c2		
-	if ((Y7<0)&&(Y8<0)){ // is i<=l and k<=j, aka do with have interval overlap
+	if ((Y7<0)&&(Y8<0)){ // is i<=l and k<=j, aka do we have interval overlap
 		if ((Y9>0)&&(Y10>0)) //k-i-l-j                                                         <<<< EPISODE 18, removed = parts of <=
 			return 1;
-		else if ((Y9>0)&&(Y10<0)) //k-i-j-l
+		else if ((Y9>0)&&(Y10<=0)) //k-i-j-l
 			return 2;
-		else if ((Y9<0)&&(Y10>0)) //i-k-l-j
+		else if ((Y9<=0)&&(Y10>0)) //i-k-l-j
 			return 3;
-		else if ((Y9<0)&&(Y10<0)) //i-k-j-l
+		else if ((Y9<=0)&&(Y10<=0)) //i-k-j-l
 			return 4;
 	}
+
+
 
 	return 0; // no intersection interval overlap
 }
@@ -931,12 +955,12 @@ void triangleIntersectionPoints(struct FACE* face1, struct FACE* face2){
 		float point1[3], point2[3];
 
 		if (mode==1){ //k-i-l-j intersection, aka intersection from i to l on both triangles
-			edgeLineIntersection(face1->node_array[0],face1->node_array[1],N3,P3,point1); // i 
+			edgeLineIntersection(face1->node_array[0],face1->node_array[2],N3,P3,point1); // i corrected in episode 18
 			edgeLineIntersection(face2->node_array[0],face2->node_array[2],N3,P3,point2); // l
 		}
 		else if (mode==2){ //k-i-j-l intersection, aka intersection from i to j on both triangles
-			edgeLineIntersection(face1->node_array[0],face1->node_array[1],N3,P3,point1); // i 
-			edgeLineIntersection(face1->node_array[0],face1->node_array[2],N3,P3,point2); // j 
+			edgeLineIntersection(face1->node_array[0],face1->node_array[2],N3,P3,point1); // i 
+			edgeLineIntersection(face1->node_array[0],face1->node_array[1],N3,P3,point2); // j 
 		}
 		else if (mode==3){ //i-k-l-j intersection, aka intersection from k to l on both triangles
 			edgeLineIntersection(face2->node_array[0],face2->node_array[1],N3,P3,point1); // k 
@@ -944,8 +968,11 @@ void triangleIntersectionPoints(struct FACE* face1, struct FACE* face2){
 		}
 		else if (mode==4){ //i-k-j-l intersection, aka intersection from k to j on both triangles
 			edgeLineIntersection(face2->node_array[0],face2->node_array[1],N3,P3,point1); // k 
-			edgeLineIntersection(face1->node_array[0],face1->node_array[2],N3,P3,point2); // j 
+			edgeLineIntersection(face1->node_array[0],face1->node_array[1],N3,P3,point2); // j 
 		}
+
+		
+		printf("mode=%d\n",mode);
 
 		printf("Triangle intersection occurs between (%f,%f,%f) & (%f,%f,%f)\n",point1[0],point1[1],point1[2],point2[0],point2[1],point2[2]);	
 		printf("for face1= (%f,%f,%f)->(%f,%f,%f)->(%f,%f,%f)\n",
@@ -956,6 +983,7 @@ void triangleIntersectionPoints(struct FACE* face1, struct FACE* face2){
 				face2->node_array[0]->x,face2->node_array[0]->y,face2->node_array[0]->z,
 				face2->node_array[1]->x,face2->node_array[1]->y,face2->node_array[1]->z,
 				face2->node_array[2]->x,face2->node_array[2]->y,face2->node_array[2]->z);
+
 
 		// episode 18
 		struct FLOATARRAYLIST* new_constraint_edge1=(struct FLOATARRAYLIST*)malloc((6)*sizeof(int)+sizeof(struct FLOATARRAYLIST*));
@@ -1163,18 +1191,18 @@ void retriangulateFaceWithConstraintEdges(struct BODY* body, struct FACE* face){
 	printf("n=(%f,%f,%f)\n",face->normal[0],face->normal[1],face->normal[2]);
 
 	// define 2D point cloud
-	float (*points)[2]=malloc(numPoints*2*sizeof(float));
+	float (*points_pre)[2]=malloc(numPoints*2*sizeof(float));
 	
 	// populate the 2D point cloud from the 3D data of nodes
 	for (int i=0; i<face->numNodes;i++){ // can skip the 0th node and just put (0,0), but for completeness:
-		points[i][0]=u[0]*(face->node_array[i]->x-face->node_array[0]->x)
+		points_pre[i][0]=u[0]*(face->node_array[i]->x-face->node_array[0]->x)
 					+u[1]*(face->node_array[i]->y-face->node_array[0]->y)
 					+u[2]*(face->node_array[i]->z-face->node_array[0]->z);
-		points[i][1]=v[0]*(face->node_array[i]->x-face->node_array[0]->x)
+		points_pre[i][1]=v[0]*(face->node_array[i]->x-face->node_array[0]->x)
 					+v[1]*(face->node_array[i]->y-face->node_array[0]->y)
 					+v[2]*(face->node_array[i]->z-face->node_array[0]->z);
 		// we dont have to bother with the z probably
-/*		points[i][2]=face->normal[0]*(face->node_array[i]->x-face->node_array[0]->x)
+/*		points_pre[i][2]=face->normal[0]*(face->node_array[i]->x-face->node_array[0]->x)
 					+face->normal[1]*(face->node_array[i]->y-face->node_array[0]->y)
 					+face->normal[2]*(face->node_array[i]->z-face->node_array[0]->z);
 */
@@ -1190,16 +1218,16 @@ void retriangulateFaceWithConstraintEdges(struct BODY* body, struct FACE* face){
 	while (iterF!=NULL){
 		for (int i=0; i<(iterF->numVals)/6;i++){
 			// populate the 2D point cloud from the 3D data of constraint edges
-			points[j][0]=u[0]*(iterF->array[6*i]-face->node_array[0]->x)
+			points_pre[j][0]=u[0]*(iterF->array[6*i]-face->node_array[0]->x)
 						+u[1]*(iterF->array[6*i+1]-face->node_array[0]->y)
 						+u[2]*(iterF->array[6*i+2]-face->node_array[0]->z);
-			points[j][1]=v[0]*(iterF->array[6*i]-face->node_array[0]->x)
+			points_pre[j][1]=v[0]*(iterF->array[6*i]-face->node_array[0]->x)
 						+v[1]*(iterF->array[6*i+1]-face->node_array[0]->y)
 						+v[2]*(iterF->array[6*i+2]-face->node_array[0]->z);
-			points[j+1][0]=u[0]*(iterF->array[6*i+3]-face->node_array[0]->x)
+			points_pre[j+1][0]=u[0]*(iterF->array[6*i+3]-face->node_array[0]->x)
 						+u[1]*(iterF->array[6*i+4]-face->node_array[0]->y)
 						+u[2]*(iterF->array[6*i+5]-face->node_array[0]->z);
-			points[j+1][1]=v[0]*(iterF->array[6*i+3]-face->node_array[0]->x)
+			points_pre[j+1][1]=v[0]*(iterF->array[6*i+3]-face->node_array[0]->x)
 						+v[1]*(iterF->array[6*i+4]-face->node_array[0]->y)
 						+v[2]*(iterF->array[6*i+5]-face->node_array[0]->z);
 			
@@ -1220,8 +1248,41 @@ void retriangulateFaceWithConstraintEdges(struct BODY* body, struct FACE* face){
 
 	printf("PRE point cloud: \n");
 	for (int i=0; i<numPoints; i++){
+		printf("(%f,%f)\n",points_pre[i][0],points_pre[i][1]);
+	}
+	
+	bool (*duplicatePoints)=malloc(numPoints*sizeof(bool));
+	int realNumPoints=numPoints;
+
+	for (int i=0; i<numPoints; i++){
+		for (int j=(i+1); j<numPoints; j++){
+			if ((points_pre[i][0]==points_pre[j][0])&&(points_pre[i][1]==points_pre[j][1])){
+				printf("point %d has a duplicate\n",i);
+				duplicatePoints[j]=true;
+				realNumPoints--;
+			}
+		}
+	}
+
+	int realPointIndex=0;
+	float (*points)[2]=malloc(realNumPoints*2*sizeof(float));
+	for (int i=0; i<numPoints; i++){
+		if (!duplicatePoints[i]){
+			points[realPointIndex][0]=points_pre[i][0];
+			points[realPointIndex++][1]=points_pre[i][1];
+		}
+	}
+
+	numPoints=realNumPoints;
+	free(points_pre);
+
+	printf("PRE point cloud: \n");
+	for (int i=0; i<numPoints; i++){
 		printf("(%f,%f)\n",points[i][0],points[i][1]);
 	}
+
+
+
 
 // find min and max boundaries of point cloud
 	float xmin=0,xmax=0,ymin=0,ymax=0;
@@ -1956,9 +2017,10 @@ void retriangulateFaceWithConstraintEdges(struct BODY* body, struct FACE* face){
 
 	// connect the linked list on the front end
 	
-	struct FACE* iter_face=body->face;
-	while (iter_face->next!=face){
-		iter_face=iter_face->next;
+	struct FACE* iter_face=(body->face);
+	while ((iter_face->next)!=face){
+		printf("yoyo!\n");
+			iter_face=iter_face->next;
 	}
 	iter_face->next=next_face;
 	
@@ -1978,8 +2040,8 @@ struct BODY* evaluateCSG(int operation, struct BODY* bodyA, struct BODY* bodyB){
 
 	printf("bodyA at beginning\n");
 	printBodyElements(bodyA);
-//	printf("bodyB\n");
-//	printBodyElements(bodyB);
+	printf("bodyB\n");
+	printBodyElements(bodyB);
 	
 	struct DRAWSTYLE* ds=defaultDrawstyle();
 	float lookFrom[3]={10,10,10};
@@ -2008,11 +2070,16 @@ struct BODY* evaluateCSG(int operation, struct BODY* bodyA, struct BODY* bodyB){
 	
 	// find all the intersects between faces in the bodies
 	struct FACE* faceA=bodyA->face;
+	int faceANum=0;
+	int faceBNum=0;
 	struct FACE* faceB;
 	while(faceA!=NULL){
 		struct FACE* faceA_copy=deepCopyFace(faceA);
+		printf("faceANum:%d\n",faceANum++);
+		faceBNum=0;
 		faceB=bodyB->face;
 		while(faceB!=NULL){
+			printf("faceBNum:%d\n",faceBNum++);
 			printf("checking face:\n");
 			struct FACE* faceB_copy=deepCopyFace(faceB);
 			triangleIntersectionPoints(faceA_copy,faceB_copy);
@@ -2046,6 +2113,8 @@ struct BODY* evaluateCSG(int operation, struct BODY* bodyA, struct BODY* bodyB){
 		faceA=faceA->next;
 	}
 
+
+/*	printf("\n\n\n\n OK NOW WE DO BODY B\n\n\n\n");
 	faceB=bodyB->face;
 	while(faceB!=NULL){
 		if (faceB->constraint_edges!=NULL){
@@ -2053,19 +2122,19 @@ struct BODY* evaluateCSG(int operation, struct BODY* bodyA, struct BODY* bodyB){
 		}
 		faceB=faceB->next;
 	}
-
-	faceA=bodyA->face;
-	while(faceA!=NULL){
-		ensureProperTriangleNodeOrder(faceA);
-		faceA=faceA->next;
-	}
+*/
+//	faceA=bodyA->face;
+//	while(faceA!=NULL){
+//		ensureProperTriangleNodeOrder(faceA);
+//		faceA=faceA->next;
+//	} should this say body B and face B? hmm?
 
 	printf("bodyA\n");
 	printBodyElements(bodyA);
 	printf("bodyB\n");
 	printBodyElements(bodyB);
 	
-	drawBody(800,600,lookAt,lookFrom,bodyA,ds);
+	drawBody(800,800,lookAt,lookFrom,bodyA,ds);
 	
 	return newBody;
 }
